@@ -1,75 +1,117 @@
 # NutriDulce
 
-Aplicación web de tienda y gestión para un pequeño emprendimiento de repostería. La tienda, la API y la persistencia corren en un único servidor local, sin dependencias de terceros en el backend.
+Aplicación web de tienda y gestión para un pequeño emprendimiento de repostería. La tienda, la API y la persistencia corren en un único servidor. El frontend usa HTML, CSS y JavaScript nativos; el backend usa Python y PostgreSQL.
 
 ## Estructura
 
 ```text
 NutriDulce/
 ├── backend/
-│   └── server.py          # Servidor HTTP, API REST, reglas de negocio y autenticación
+│   ├── server.py                    # Servidor HTTP, API, reglas de negocio y autenticación
+│   └── migrate_sqlite_to_postgres.py # Importador de una sola vez desde SQLite
 ├── data/
-│   └── nutridulce.sqlite3 # Base SQLite creada al iniciar (no se versiona)
+│   └── nutridulce.sqlite3            # Base SQLite de origen, solo para importar datos
 ├── frontend/
-│   ├── index.html         # Tienda y punto de entrada del panel
-│   ├── styles.css         # Diseño adaptable
-│   ├── app.js             # Tienda, carrito y panel administrativo
-│   └── assets/            # Logo y fotografías originales; placeholder SVG para fotos pendientes
-├── .gitignore
+│   ├── index.html
+│   ├── styles.css
+│   ├── app.js
+│   └── assets/
+├── requirements.txt
 └── README.md
 ```
 
-## Tecnologías y arquitectura
+## Tecnologías y datos
 
-- **Frontend:** HTML, CSS y JavaScript nativos; interfaz adaptable para celulares y escritorio, sin proceso de compilación.
-- **Backend:** Python 3.10+ con `http.server`, API JSON y reglas de negocio. No requiere instalar paquetes.
-- **Base de datos:** SQLite, claves foráneas activadas, modo WAL e índices para los listados por fecha.
-- El servidor entrega la tienda y la API en el mismo origen. SQLite y la lógica de stock son independientes de la presentación y se pueden migrar posteriormente a PostgreSQL y otro servidor WSGI/ASGI.
+- **Frontend:** HTML, CSS y JavaScript nativos, responsive y sin compilación. Esta migración no modifica el frontend.
+- **Backend:** Python 3.10 o superior, `http.server` y Psycopg 3.
+- **Base de datos:** PostgreSQL configurado mediante `DATABASE_URL`.
+- **Esquema:** `users`, `payment_methods`, `products`, `customers`, `orders`, `order_items`, `sales`, `sale_items`, `stock_movements` y `expenses`. Incluye claves primarias identity, claves foráneas, restricciones e índices por fecha.
+- Los montos siguen almacenándose como enteros en guaraníes. Las respuestas JSON y las rutas API existentes se mantienen.
 
-### Esquema de datos
+## Prueba local desde una base vacía
 
-- `users`: usuario administrador y hash PBKDF2 de contraseña.
-- `products`: catálogo, precio en guaraníes, disponibilidad, publicación y umbral de stock bajo.
-- `customers`: datos de contacto únicos por teléfono.
-- `payment_methods`: medios iniciales (Efectivo, Transferencia, Tarjeta).
-- `orders` / `order_items`: pedido, código público y detalle con instantánea de precio/nombre.
-- `sales` / `sale_items`: venta generada al confirmar el pedido, con su detalle histórico.
-- `stock_movements`: registro de ingresos, ajustes, ventas y devoluciones.
-- `expenses`: egresos con categoría, monto y fecha.
-
-Los montos se almacenan como enteros en guaraníes. Las relaciones conservan los detalles históricos si se desactiva un producto. Los cambios de stock y la confirmación de la venta ocurren dentro de una transacción SQLite.
-
-## Identidad visual e imágenes
-
-El logo (`logo-nutridulce.jpg`) y las dos fotografías (`budin-frutos-marmolado.jpeg`, `pastafrola-guayaba.jpeg`) se copiaron desde los adjuntos sin recodificarlos. Las imágenes de ambos budines usan la fotografía compartida; la pastafrola de guayaba usa su fotografía. La pastafrola de dulce de leche y las galletitas muestran un placeholder que indica que falta la fotografía. En el editor de productos se puede cambiar entre las fotografías disponibles y ese placeholder, o subir una nueva foto JPEG, PNG o WebP de hasta 5 MB. Los archivos que se suben se conservan originales; la tarjeta usa CSS para encuadrarlos.
-
-## Inicio
-
-Requiere Python 3.10 o superior.
+Requisitos: Python 3.10+, PostgreSQL local y acceso a una base vacía. Desde PowerShell, en la carpeta del proyecto:
 
 ```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
+```
+
+Creá una base y un usuario PostgreSQL local. Si ya tenés PostgreSQL instalado, podés usar `psql`:
+
+```sql
+CREATE USER nutridulce WITH PASSWORD 'cambia-esta-clave';
+CREATE DATABASE nutridulce OWNER nutridulce;
+```
+
+Configurá la conexión, el usuario administrador y su contraseña antes del primer inicio:
+
+```powershell
+$env:DATABASE_URL = "postgresql://nutridulce:cambia-esta-clave@localhost:5432/nutridulce"
+$env:NUTRIDULCE_ADMIN_USER = "admin"
+$env:NUTRIDULCE_ADMIN_PASSWORD = "elegi-una-clave-segura"
 python backend/server.py
 ```
 
-Abrir <http://127.0.0.1:8000>. La base se crea en `data/nutridulce.sqlite3` y se cargan los cinco productos iniciales la primera vez.
+Abrí <http://127.0.0.1:8000>. El servidor crea el esquema, los métodos de pago, el administrador y los cinco productos iniciales cuando la base está vacía. `PORT` se usa automáticamente si está definido; localmente el valor predeterminado es `8000`. En Render, el servidor escucha en `0.0.0.0` y usa el `PORT` asignado.
 
-Acceso administrativo inicial: **admin / dulce123**. Definí `NUTRIDULCE_ADMIN_USER` y `NUTRIDULCE_ADMIN_PASSWORD` antes del primer inicio para elegir otras credenciales. El usuario administrador se crea solo cuando la tabla `users` está vacía. Para cambiar una contraseña después de la inicialización, se debe migrar/actualizar ese hash de acceso desde la base.
+El administrador se crea únicamente si `users` está vacía. Cambiar esas variables después no reemplaza al usuario ya creado. En una importación, se conserva el administrador y su hash proveniente de SQLite.
 
-Variables opcionales:
+### Usar PostgreSQL con Docker (opcional)
+
+Si Docker está instalado, puede iniciar una base descartable para la prueba:
+
+```powershell
+docker run --name nutridulce-postgres -e POSTGRES_USER=nutridulce -e POSTGRES_PASSWORD=nutridulce-local -e POSTGRES_DB=nutridulce -p 5432:5432 -d postgres:17
+$env:DATABASE_URL = "postgresql://nutridulce:nutridulce-local@localhost:5432/nutridulce"
+$env:NUTRIDULCE_ADMIN_USER = "admin"
+$env:NUTRIDULCE_ADMIN_PASSWORD = "elegi-una-clave-segura"
+python backend/server.py
+```
+
+Si el puerto 5432 ya está ocupado, cambiá el primer puerto publicado (`-p 5433:5432`) y usá `localhost:5433` en `DATABASE_URL`. No ejecutes el servidor contra una base con información que quieras conservar para una prueba de inicio vacío.
+
+## Importar la base SQLite existente
+
+El importador lee `data/nutridulce.sqlite3` y copia las tablas y sus IDs a PostgreSQL; no borra ni modifica el archivo SQLite. Antes de ejecutarlo, configurá `DATABASE_URL` para que apunte a una base PostgreSQL vacía y asegurate de tener instaladas las dependencias (`python -m pip install -r requirements.txt`). Luego:
+
+```powershell
+$env:DATABASE_URL = "postgresql://nutridulce:tu-clave@localhost:5432/nutridulce"
+python backend/migrate_sqlite_to_postgres.py
+python backend/server.py
+```
+
+Para indicar otro archivo de origen, definí `SQLITE_PATH` antes de correr el importador. El importador se niega a copiar si encuentra datos en alguna tabla de destino, para evitar duplicados o sobrescrituras. La importación usa una transacción y avanza las secuencias de IDs al máximo importado. Conservá una copia de seguridad del archivo SQLite y verificá los conteos informados antes de cambiar el servicio de producción a la nueva conexión.
+
+## Variables de entorno
 
 | Variable | Predeterminado | Uso |
 |---|---|---|
-| `PORT` | `8000` | Puerto HTTP |
-| `NUTRIDULCE_HOST` | `127.0.0.1` | Interfaz de red de escucha |
-| `NUTRIDULCE_DB` | `data/nutridulce.sqlite3` | Ruta de la base SQLite |
-| `NUTRIDULCE_ADMIN_USER` | `admin` | Usuario creado al inicializar |
-| `NUTRIDULCE_ADMIN_PASSWORD` | `dulce123` | Contraseña creada al inicializar |
+| `DATABASE_URL` | Sin valor; requerida | URL de conexión PostgreSQL |
+| `PORT` | `8000` | Puerto HTTP (Render lo proporciona) |
+| `NUTRIDULCE_HOST` | `0.0.0.0` | Interfaz de red de escucha |
+| `NUTRIDULCE_ADMIN_USER` | `admin` | Usuario inicial, solo al crear el primer administrador |
+| `NUTRIDULCE_ADMIN_PASSWORD` | `dulce123` | Contraseña inicial, solo al crear el primer administrador |
+| `SQLITE_PATH` | `data/nutridulce.sqlite3` | Archivo de origen opcional del importador |
 
-## Uso
+No publiques ni subas credenciales reales al repositorio. Configuralas como variables de entorno localmente y en la configuración del servicio de hosting.
 
-El cliente agrega productos y envía un pedido con sus datos de contacto y entrega. El pedido queda **Pendiente** y no consume stock todavía. Al cambiarlo a **Confirmado**, el sistema vuelve a comprobar la disponibilidad, descuenta las cantidades, crea la venta y registra los movimientos de stock atómicamente. Al cancelar posteriormente una venta confirmada, se reintegra el stock y la venta queda marcada como cancelada. Los datos de productos históricos quedan guardados en los detalles del pedido/venta.
+## Render y PostgreSQL externo
 
-La administración permite gestionar pedidos, productos, reposición de stock, ventas filtradas, clientes y gastos; el resumen muestra ingresos diarios/semanales/mensuales, egresos, ganancia estimada, pagos, productos destacados y alertas de stock.
+Para conectar Render u otro hosting a PostgreSQL, guardá la URL de conexión como `DATABASE_URL` en las variables de entorno del servicio web. En Render, usá la URL interna si los dos servicios están en la misma región y mantené el comando de inicio:
+
+```text
+python backend/server.py
+```
+
+Este repositorio queda preparado para conectarse también a un PostgreSQL externo compatible mediante `DATABASE_URL`. Tené en cuenta que el plan gratuito actual de Render Postgres vence 30 días después de su creación; Render ofrece una ventana de 14 días para actualizarlo y el nivel gratuito no incluye backups. Por eso, el nivel gratuito no es almacenamiento permanente por sí solo. Consultá los límites vigentes de [Render Free](https://render.com/docs/free) y elegí un proveedor/plan con la duración y las copias de seguridad que necesitás.
+
+## Funcionalidad existente
+
+El cliente agrega productos y envía un pedido con sus datos de contacto y entrega. El pedido queda **Pendiente** y no consume stock todavía. Al cambiarlo a **Confirmado**, el sistema vuelve a comprobar la disponibilidad, descuenta las cantidades, crea la venta y registra los movimientos de stock dentro de una transacción. Al cancelar posteriormente una venta confirmada, se reintegra el stock y la venta queda marcada como cancelada. Los datos históricos de los productos permanecen en los detalles del pedido y la venta.
+
+La administración permite gestionar pedidos, productos, reposición de stock, ventas filtradas, clientes y gastos. El resumen muestra ingresos diarios, semanales y mensuales, egresos, ganancia estimada, pagos, productos destacados y alertas de stock.
 
 ## API principal
 
