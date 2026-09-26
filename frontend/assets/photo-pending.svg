@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 480" role="img" aria-labelledby="title desc">
+  <title id="title">Fotografía próximamente</title>
+  <desc id="desc">Ilustración decorativa que señala que este producto todavía no tiene fotografía.</desc>
+  <rect width="640" height="480" fill="#fff1f6"/>
+  <circle cx="320" cy="208" r="104" fill="#ffe0ec"/>
+  <rect x="264" y="160" width="112" height="82" rx="13" fill="#ad3b6c"/>
+  <path d="M290 160l10-17h40l10 17" fill="#ad3b6c"/>
+  <circle cx="320" cy="201" r="31" fill="#fff1f6"/>
+  <circle cx="320" cy="201" r="20" fill="#eda0c0"/>
+  <circle cx="352" cy="178" r="5" fill="#ffe0ec"/>
+  <text x="320" y="330" text-anchor="middle" fill="#71334f" font-family="Arial,sans-serif" font-size="19" font-weight="700" letter-spacing="2">FOTOGRAFÍA</text>
+  <text x="320" y="360" text-anchor="middle" fill="#8f6879" font-family="Arial,sans-serif" font-size="17">próximamente</text>
+</svg>
