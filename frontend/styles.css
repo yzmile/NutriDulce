@@ -398,6 +398,16 @@ body:has(#store-view:not(.hidden)) .site-footer>span b{color:#A96636}
 .admin-view .chart-bar.today{background:#dc9855}
 .admin-view .admin-view-highlight{color:#995c30}
 
+/* Fixed columns keep stock movement quantities and timestamps aligned. */
+.stock-movement-row{display:grid;grid-template-columns:minmax(0,1fr) 56px minmax(150px,max-content);gap:12px;min-width:0}
+.stock-movement-product{min-width:0;overflow-wrap:anywhere}
+.stock-movement-quantity{text-align:center}
+.stock-movement-date{justify-self:end;text-align:right;white-space:nowrap}
+@media(max-width:620px){
+  .stock-movement-row{grid-template-columns:minmax(0,1fr) 44px minmax(0,130px);gap:8px}
+  .stock-movement-date{white-space:normal;overflow-wrap:anywhere}
+}
+
 @media(max-width:620px){.desktop-nav{flex-wrap:wrap}.admin-top{gap:14px}.admin-actions{row-gap:8px}.admin-tabs{row-gap:7px}}
 @media(max-width:380px){.desktop-nav{gap:8px}.desktop-nav a{font-size:11px}}
 
