@@ -34,6 +34,25 @@ def json_default(value):
     raise TypeError(f"Object of type {type(value).__name__} is not JSON serializable")
 
 
+def password_hash(password, iterations=600000):
+    salt = secrets.token_bytes(16)
+    digest = hashlib.pbkdf2_hmac("sha256", password.encode(), salt, iterations).hex()
+    return f"pbkdf2_sha256${iterations}${salt.hex()}${digest}"
+
+
+def verify_password(password, stored):
+    try:
+        if stored.startswith("pbkdf2_sha256$"):
+            _, rounds, salt, expected = stored.split("$", 3)
+            actual = hashlib.pbkdf2_hmac("sha256", password.encode(), bytes.fromhex(salt), int(rounds)).hex()
+        else:  # Existing SQLite/PostgreSQL accounts use salt:digest with 240,000 rounds.
+            salt, expected = stored.split(":", 1)
+            actual = hashlib.pbkdf2_hmac("sha256", password.encode(), bytes.fromhex(salt), 240000).hex()
+        return hmac.compare_digest(actual, expected)
+    except (ValueError, TypeError):
+        return False
+
+
 def connect():
     database_url = os.environ.get("DATABASE_URL", "").strip()
     if not database_url:
@@ -142,14 +161,19 @@ def init_db(seed_data=True):
         for statement in schema:
             db.execute(statement)
         if seed_data:
+            businesses_table = db.execute("SELECT to_regclass('public.businesses') AS table_name").fetchone()["table_name"]
+            product_business_column = db.execute("SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='products' AND column_name='business_id'").fetchone()
+            if not businesses_table or not product_business_column:
+                raise RuntimeError("Falta la migración de negocios. Ejecutá primero: python backend/migrate_multibusiness.py")
             for name in PAYMENTS:
                 db.execute("INSERT INTO payment_methods(name) VALUES (%s) ON CONFLICT(name) DO NOTHING", (name,))
             if db.execute("SELECT COUNT(*) AS count FROM users").fetchone()["count"] == 0:
-                salt = secrets.token_bytes(16)
-                pwd = os.environ.get("NUTRIDULCE_ADMIN_PASSWORD", "dulce123")
-                hashed = salt.hex() + ":" + hashlib.pbkdf2_hmac("sha256", pwd.encode(), salt, 240000).hex()
-                db.execute("INSERT INTO users(username,password_hash) VALUES (%s,%s)", (os.environ.get("NUTRIDULCE_ADMIN_USER", "admin"), hashed))
-            if db.execute("SELECT COUNT(*) AS count FROM products").fetchone()["count"] == 0:
+                username = os.environ.get("NUTRIDULCE_ADMIN_USER", "").strip()
+                password = os.environ.get("NUTRIDULCE_ADMIN_PASSWORD", "")
+                if username and password:
+                    db.execute("INSERT INTO users(username,password_hash) VALUES (%s,%s)", (username, password_hash(password)))
+            business = db.execute("SELECT id FROM businesses WHERE slug='nutridulce'").fetchone()
+            if business:
                 initial = [
                     ("Budín de frutos secos", "Budín casero esponjoso con una mezcla generosa de frutos secos.", 10000, 12, "budin-frutos-marmolado", 5),
                     ("Budín marmolado", "La combinación perfecta de vainilla y chocolate, hecho en casa.", 10000, 12, "budin-frutos-marmolado", 5),
@@ -157,7 +181,10 @@ def init_db(seed_data=True):
                     ("Pastafrola con dulce de guayaba", "Un clásico artesanal con dulce de guayaba paraguaya.", 8000, 12, "pastafrola-guayaba", 5),
                     ("Galletitas de avena x3 unidades", "Tres galletitas de avena caseras, crocantes y deliciosas.", 10000, 15, "photo-pending", 5),
                 ]
-                db.executemany("INSERT INTO products(name,description,price,stock,image,low_stock_threshold) VALUES (%s,%s,%s,%s,%s,%s)", initial)
+                for item in initial:
+                    present = db.execute("SELECT 1 FROM products WHERE business_id=%s AND name=%s", (business["id"], item[0])).fetchone()
+                    if not present:
+                        db.execute("INSERT INTO products(business_id,name,description,price,stock,image,low_stock_threshold) VALUES (%s,%s,%s,%s,%s,%s,%s)", (business["id"], *item))
         # Move untouched starter images to the real customer photos and explicit photo placeholders.
         db.execute("UPDATE products SET image='budin-frutos-marmolado' WHERE name='Budín de frutos secos' AND image='cake'")
         db.execute("UPDATE products SET image='budin-frutos-marmolado' WHERE name='Budín marmolado' AND image='marble'")
@@ -186,6 +213,14 @@ def integer(value, label, minimum=0):
     if n < minimum:
         raise ValueError(f"{label}: el valor mínimo es {minimum}.")
     return n
+
+
+def boolean(value, label):
+    if isinstance(value, bool):
+        return value
+    if value in (0, 1):
+        return bool(value)
+    raise ValueError(f"{label}: seleccioná una opción válida.")
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -229,13 +264,24 @@ class Handler(BaseHTTPRequestHandler):
         try:
             with DB_LOCK, connect() as db:
                 if path == "/api/products":
-                    return self.send_json([serialize(r) for r in db.execute("SELECT * FROM products WHERE active=1 ORDER BY id")])
+                    business = query.get("business")
+                    sql = "SELECT p.*,b.slug business_slug,b.name business_name FROM products p JOIN businesses b ON b.id=p.business_id WHERE p.active=1"
+                    args = []
+                    if business:
+                        sql += " AND b.slug=%s"; args.append(business)
+                    return self.send_json([serialize(r) for r in db.execute(sql+" ORDER BY p.id", args)])
+                if path == "/api/businesses":
+                    return self.send_json([serialize(r) for r in db.execute("SELECT id,slug,name FROM businesses ORDER BY id")])
+                if path == "/api/admin/registration-status":
+                    users = db.execute("SELECT COUNT(*) AS count FROM users").fetchone()["count"]
+                    return self.send_json({"available": users == 0 or bool(os.environ.get("NUTRIDULCE_ADMIN_REGISTRATION_KEY")), "requires_invite": users > 0})
                 if path == "/api/admin/me":
                     if not self.admin(): return
-                    return self.send_json({"username": "admin"})
+                    cookie = SimpleCookie(self.headers.get("Cookie", "")); sid = cookie.get("nd_session")
+                    return self.send_json({"username": SESSIONS[sid.value]})
                 if path.startswith("/api/admin/") and not self.admin(): return
                 if path == "/api/admin/products":
-                    return self.send_json([serialize(r) for r in db.execute("SELECT * FROM products ORDER BY id")])
+                    return self.send_json([serialize(r) for r in db.execute("SELECT p.*,b.slug business_slug,b.name business_name FROM products p JOIN businesses b ON b.id=p.business_id ORDER BY p.id")])
                 if path == "/api/admin/orders":
                     rows = db.execute("SELECT o.*,c.name customer_name,c.phone customer_phone,c.address customer_saved_address FROM orders o JOIN customers c ON c.id=o.customer_id ORDER BY o.created_at DESC")
                     result = [serialize(r) for r in rows]
@@ -308,19 +354,35 @@ class Handler(BaseHTTPRequestHandler):
             with DB_LOCK, connect() as db:
                 if path == "/api/admin/login" and method == "POST":
                     username = str(data.get("username", "")).strip()
-                    row = db.execute("SELECT * FROM users WHERE username=%s", (username,)).fetchone()
-                    valid = False
-                    if row:
-                        salt, expected = row["password_hash"].split(":", 1)
-                        actual = hashlib.pbkdf2_hmac("sha256", str(data.get("password", "")).encode(), bytes.fromhex(salt), 240000).hex()
-                        valid = hmac.compare_digest(actual, expected)
+                    row = db.execute("SELECT * FROM users WHERE lower(username)=lower(%s)", (username,)).fetchone()
+                    valid = bool(row and verify_password(str(data.get("password", "")), row["password_hash"]))
                     if not valid: return self.send_json({"error":"Usuario o contraseña incorrectos."},401)
-                    sid = secrets.token_urlsafe(32); SESSIONS[sid] = username
-                    return self.send_json({"ok":True,"username":username},headers={"Set-Cookie":f"nd_session={sid}; HttpOnly; SameSite=Lax; Path=/; Max-Age=43200"})
+                    sid = secrets.token_urlsafe(32); SESSIONS[sid] = row["username"]
+                    return self.send_json({"ok":True,"username":row["username"]},headers={"Set-Cookie":f"nd_session={sid}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=43200"})
+                if path == "/api/admin/register" and method == "POST":
+                    username = str(data.get("username", "")).strip()
+                    password = str(data.get("password", ""))
+                    confirmation = str(data.get("confirm_password", ""))
+                    invite = str(data.get("invite_key", ""))
+                    if not re.fullmatch(r"[A-Za-z0-9_.-]{3,32}", username):
+                        raise ValueError("El usuario debe tener entre 3 y 32 caracteres: letras, números, punto, guion o guion bajo.")
+                    if len(password) < 12 or len(password) > 200:
+                        raise ValueError("La contraseña debe tener entre 12 y 200 caracteres.")
+                    if password != confirmation:
+                        raise ValueError("Las contraseñas no coinciden.")
+                    db.execute("SELECT pg_advisory_xact_lock(836271904)")
+                    existing_count = db.execute("SELECT COUNT(*) AS count FROM users").fetchone()["count"]
+                    invite_key = os.environ.get("NUTRIDULCE_ADMIN_REGISTRATION_KEY", "")
+                    if existing_count and (not invite_key or not hmac.compare_digest(invite, invite_key)):
+                        raise ValueError("El registro de administradores requiere una clave de invitación configurada por el administrador del sistema.")
+                    if db.execute("SELECT 1 FROM users WHERE lower(username)=lower(%s)", (username,)).fetchone():
+                        raise ValueError("Ese nombre de usuario ya está en uso.")
+                    db.execute("INSERT INTO users(username,password_hash) VALUES (%s,%s)", (username, password_hash(password)))
+                    return self.send_json({"ok":True,"username":username},201)
                 if path == "/api/admin/logout" and method == "POST":
                     cookie = SimpleCookie(self.headers.get("Cookie", "")); sid=cookie.get("nd_session")
                     if sid: SESSIONS.pop(sid.value,None)
-                    return self.send_json({"ok":True},headers={"Set-Cookie":"nd_session=; HttpOnly; SameSite=Lax; Path=/; Max-Age=0"})
+                    return self.send_json({"ok":True},headers={"Set-Cookie":"nd_session=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0"})
                 if path.startswith("/api/admin/") and not self.admin(): return
                 if path == "/api/orders" and method == "POST":
                     name=str(data.get("name","")).strip(); phone=str(data.get("phone","")).strip(); address=str(data.get("address","")).strip(); payment=data.get("payment"); notes=str(data.get("notes","")).strip()
@@ -349,8 +411,12 @@ class Handler(BaseHTTPRequestHandler):
                 if path == "/api/admin/products" and method == "POST":
                     name=str(data.get("name","")).strip(); description=str(data.get("description","")).strip(); image=str(data.get("image","cake")).strip() or "cake"
                     if not name or len(name)>120: raise ValueError("El nombre del producto es obligatorio (hasta 120 caracteres).")
+                    if len(description)>500 or len(image)>200: raise ValueError("La descripción o referencia de la imagen es demasiado extensa.")
                     price=integer(data.get("price"),"Precio"); stock=integer(data.get("stock"),"Stock"); threshold=integer(data.get("low_stock_threshold",5),"Aviso de poco stock")
-                    product_id=db.execute("INSERT INTO products(name,description,price,stock,image,low_stock_threshold,active) VALUES (%s,%s,%s,%s,%s,%s,%s) RETURNING id",(name,description,price,stock,image,threshold,int(bool(data.get("active",True))))).fetchone()["id"]
+                    business_id=integer(data.get("business_id"),"Negocio",1)
+                    if not db.execute("SELECT 1 FROM businesses WHERE id=%s",(business_id,)).fetchone(): raise ValueError("Seleccioná un negocio válido.")
+                    active=boolean(data.get("active",True),"Visibilidad")
+                    product_id=db.execute("INSERT INTO products(business_id,name,description,price,stock,image,low_stock_threshold,active) VALUES (%s,%s,%s,%s,%s,%s,%s,%s) RETURNING id",(business_id,name,description,price,stock,image,threshold,int(active))).fetchone()["id"]
                     if stock: db.execute("INSERT INTO stock_movements(product_id,product_name,quantity_change,reason) VALUES (%s,%s,%s,'Stock inicial')",(product_id,name,stock))
                     return self.send_json({"ok":True,"id":product_id},201)
                 if path == "/api/admin/expenses" and method == "POST":
@@ -382,15 +448,28 @@ class Handler(BaseHTTPRequestHandler):
             return self.send_json({"ok":True,"image":filename},201)
         match = re.fullmatch(r"/api/admin/products/(\d+)",path)
         if match:
-            pid=int(match.group(1)); p=db.execute("SELECT * FROM products WHERE id=%s",(pid,)).fetchone()
+            pid=int(match.group(1))
+            p=db.execute("SELECT * FROM products WHERE id=%s"+(" FOR UPDATE" if method == "DELETE" else ""),(pid,)).fetchone()
             if not p: return self.send_json({"error":"Producto no encontrado."},404)
             if method == "DELETE":
-                db.execute("UPDATE products SET active=0,updated_at=CURRENT_TIMESTAMP WHERE id=%s",(pid,)); return self.send_json({"ok":True})
+                history=db.execute("""SELECT
+                    (SELECT COUNT(*) FROM order_items WHERE product_id=%s) AS orders,
+                    (SELECT COUNT(*) FROM sale_items WHERE product_id=%s) AS sales,
+                    (SELECT COUNT(*) FROM stock_movements WHERE product_id=%s) AS movements""",(pid,pid,pid)).fetchone()
+                if any(history.values()):
+                    return self.send_json({"error":"No se puede eliminar físicamente este producto porque tiene historial de pedidos, ventas o movimientos de stock."},409)
+                db.execute("DELETE FROM products WHERE id=%s",(pid,))
+                return self.send_json({"ok":True,"message":"Producto eliminado."})
             if method == "PUT":
                 name=str(data.get("name","")).strip(); description=str(data.get("description","")).strip(); price=integer(data.get("price"),"Precio"); stock=integer(data.get("stock"),"Stock"); threshold=integer(data.get("low_stock_threshold",5),"Aviso de poco stock")
-                if not name: raise ValueError("El nombre del producto es obligatorio.")
+                image=str(data.get("image","cake")).strip()
+                if not name or len(name)>120: raise ValueError("El nombre del producto es obligatorio (hasta 120 caracteres).")
+                if len(description)>500 or len(image)>200: raise ValueError("La descripción o referencia de la imagen es demasiado extensa.")
+                business_id=integer(data.get("business_id",p["business_id"]),"Negocio",1)
+                if not db.execute("SELECT 1 FROM businesses WHERE id=%s",(business_id,)).fetchone(): raise ValueError("Seleccioná un negocio válido.")
+                active=boolean(data.get("active",True),"Visibilidad")
                 if stock != p["stock"]: db.execute("INSERT INTO stock_movements(product_id,product_name,quantity_change,reason) VALUES (%s,%s,%s,%s)",(pid,name,stock-p["stock"],"Ajuste de stock"))
-                db.execute("UPDATE products SET name=%s,description=%s,price=%s,stock=%s,image=%s,active=%s,low_stock_threshold=%s,updated_at=CURRENT_TIMESTAMP WHERE id=%s",(name,description,price,stock,str(data.get("image","cake")),int(bool(data.get("active",True))),threshold,pid))
+                db.execute("UPDATE products SET business_id=%s,name=%s,description=%s,price=%s,stock=%s,image=%s,active=%s,low_stock_threshold=%s,updated_at=CURRENT_TIMESTAMP WHERE id=%s",(business_id,name,description,price,stock,image,int(active),threshold,pid))
                 return self.send_json({"ok":True})
         match=re.fullmatch(r"/api/admin/orders/(\d+)",path)
         if match and method == "PATCH":

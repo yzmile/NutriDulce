@@ -8,7 +8,8 @@ Aplicación web de tienda y gestión para un pequeño emprendimiento de reposter
 NutriDulce/
 ├── backend/
 │   ├── server.py                    # Servidor HTTP, API, reglas de negocio y autenticación
-│   └── migrate_sqlite_to_postgres.py # Importador de una sola vez desde SQLite
+│   ├── migrate_sqlite_to_postgres.py # Importador de una sola vez desde SQLite
+│   └── migrate_multibusiness.py      # Migración aditiva NutriDulce + Nitro Coffee
 ├── data/
 │   └── nutridulce.sqlite3            # Base SQLite de origen, solo para importar datos
 ├── frontend/
@@ -22,10 +23,10 @@ NutriDulce/
 
 ## Tecnologías y datos
 
-- **Frontend:** HTML, CSS y JavaScript nativos, responsive y sin compilación. Esta migración no modifica el frontend.
+- **Frontend:** HTML, CSS y JavaScript nativos, responsive y sin compilación; catálogo y gestión muestran cada producto con su negocio.
 - **Backend:** Python 3.10 o superior, `http.server` y Psycopg 3.
 - **Base de datos:** PostgreSQL configurado mediante `DATABASE_URL`.
-- **Esquema:** `users`, `payment_methods`, `products`, `customers`, `orders`, `order_items`, `sales`, `sale_items`, `stock_movements` y `expenses`. Incluye claves primarias identity, claves foráneas, restricciones e índices por fecha.
+- **Esquema:** `businesses` se relaciona con `products.business_id`; se conservan `users`, `payment_methods`, `customers`, `orders`, `order_items`, `sales`, `sale_items`, `stock_movements` y `expenses`. Incluye claves, restricciones e índices.
 - Los montos siguen almacenándose como enteros en guaraníes. Las respuestas JSON y las rutas API existentes se mantienen.
 
 ## Prueba local desde una base vacía
@@ -45,18 +46,32 @@ CREATE USER nutridulce WITH PASSWORD 'cambia-esta-clave';
 CREATE DATABASE nutridulce OWNER nutridulce;
 ```
 
-Configurá la conexión, el usuario administrador y su contraseña antes del primer inicio:
+Configurá la conexión y, opcionalmente, las credenciales del primer administrador antes de iniciar. En una base nueva, primero aplicá la migración de negocios:
 
 ```powershell
 $env:DATABASE_URL = "postgresql://nutridulce:cambia-esta-clave@localhost:5432/nutridulce"
 $env:NUTRIDULCE_ADMIN_USER = "admin"
 $env:NUTRIDULCE_ADMIN_PASSWORD = "elegi-una-clave-segura"
+$env:NUTRIDULCE_ADMIN_REGISTRATION_KEY = "configura-una-clave-privada-larga"
+python backend/migrate_multibusiness.py
 python backend/server.py
 ```
 
-Abrí <http://127.0.0.1:8000>. El servidor crea el esquema, los métodos de pago, el administrador y los cinco productos iniciales cuando la base está vacía. `PORT` se usa automáticamente si está definido; localmente el valor predeterminado es `8000`. En Render, el servidor escucha en `0.0.0.0` y usa el `PORT` asignado.
+Abrí <http://127.0.0.1:8000>. El servidor crea los métodos de pago y productos iniciales de NutriDulce si faltan. La migración multi-negocio agrega Nitro Coffee con Agua (Gs. 5.000) y Café Espresso (Gs. 8.000, 350 ml), sin inventar existencias: los productos nuevos comienzan con stock 0. `PORT` se usa automáticamente si está definido; localmente el valor predeterminado es `8000`. En Render, el servidor escucha en `0.0.0.0` y usa el `PORT` asignado.
 
-El administrador se crea únicamente si `users` está vacía. Cambiar esas variables después no reemplaza al usuario ya creado. En una importación, se conserva el administrador y su hash proveniente de SQLite.
+Si definís ambas variables de administrador, la cuenta inicial se crea únicamente si `users` está vacía; no hay una contraseña predeterminada en el código. Si no las definís, la primera cuenta se crea desde «Crear cuenta». Las cuentas administrativas adicionales requieren `NUTRIDULCE_ADMIN_REGISTRATION_KEY`. En una importación, se conserva el administrador y su hash anterior, que sigue siendo aceptado.
+
+## Agregar Nitro Coffee a una base existente
+
+Hacé una copia de seguridad de Supabase y configurá `DATABASE_URL` para apuntar al proyecto correcto. La migración es aditiva, transaccional y repetible; no vuelve a importar SQLite ni borra filas. Asocia los productos anteriores con NutriDulce, crea `businesses`, agrega la clave foránea `products.business_id` y prepara Agua/Café Espresso. Ejecutala una vez desde el proyecto local:
+
+```powershell
+$env:DATABASE_URL = "postgresql://usuario:clave@host:5432/base"
+python backend/migrate_multibusiness.py
+python backend/server.py
+```
+
+Para habilitar nuevas cuentas administrativas, definí `NUTRIDULCE_ADMIN_REGISTRATION_KEY` en el entorno del servidor y local; elegí una clave privada larga y no la guardes en el repositorio. La primera cuenta puede registrarse sin invitación solo cuando todavía no exista ningún usuario. El registro valida usuario único, confirmación y contraseñas de al menos 12 caracteres; las nuevas contraseñas se guardan con PBKDF2-HMAC-SHA256 y salt aleatorio.
 
 ### Usar PostgreSQL con Docker (opcional)
 
@@ -65,6 +80,8 @@ Si Docker está instalado, puede iniciar una base descartable para la prueba:
 ```powershell
 docker run --name nutridulce-postgres -e POSTGRES_USER=nutridulce -e POSTGRES_PASSWORD=nutridulce-local -e POSTGRES_DB=nutridulce -p 5432:5432 -d postgres:17
 $env:DATABASE_URL = "postgresql://nutridulce:nutridulce-local@localhost:5432/nutridulce"
+$env:NUTRIDULCE_ADMIN_REGISTRATION_KEY = "configura-una-clave-privada-larga"
+python backend/migrate_multibusiness.py
 $env:NUTRIDULCE_ADMIN_USER = "admin"
 $env:NUTRIDULCE_ADMIN_PASSWORD = "elegi-una-clave-segura"
 python backend/server.py
@@ -79,6 +96,7 @@ El importador lee `data/nutridulce.sqlite3` y copia las tablas y sus IDs a Postg
 ```powershell
 $env:DATABASE_URL = "postgresql://nutridulce:tu-clave@localhost:5432/nutridulce"
 python backend/migrate_sqlite_to_postgres.py
+python backend/migrate_multibusiness.py
 python backend/server.py
 ```
 
@@ -91,8 +109,9 @@ Para indicar otro archivo de origen, definí `SQLITE_PATH` antes de correr el im
 | `DATABASE_URL` | Sin valor; requerida | URL de conexión PostgreSQL |
 | `PORT` | `8000` | Puerto HTTP (Render lo proporciona) |
 | `NUTRIDULCE_HOST` | `0.0.0.0` | Interfaz de red de escucha |
-| `NUTRIDULCE_ADMIN_USER` | `admin` | Usuario inicial, solo al crear el primer administrador |
-| `NUTRIDULCE_ADMIN_PASSWORD` | `dulce123` | Contraseña inicial, solo al crear el primer administrador |
+| `NUTRIDULCE_ADMIN_USER` | Sin valor | Usuario inicial opcional; requiere configurar también la contraseña |
+| `NUTRIDULCE_ADMIN_PASSWORD` | Sin valor | Contraseña inicial opcional; sin ambas variables, la primera cuenta se registra desde el acceso |
+| `NUTRIDULCE_ADMIN_REGISTRATION_KEY` | Sin valor | Clave de invitación requerida para las siguientes cuentas administrativas |
 | `SQLITE_PATH` | `data/nutridulce.sqlite3` | Archivo de origen opcional del importador |
 
 No publiques ni subas credenciales reales al repositorio. Configuralas como variables de entorno localmente y en la configuración del servicio de hosting.

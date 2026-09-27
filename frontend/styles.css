@@ -127,3 +127,372 @@ body{color:var(--ink);background:var(--paper)}
 @media(max-width:760px){.site-header{padding:0 18px}.site-header>.brand .brand-logo{width:50px;height:50px}.site-header>.brand .brand-name{font-size:17px}.desktop-nav{display:flex;margin:0 12px;gap:clamp(8px,1.5vw,14px)}.desktop-nav a{font-size:11px}.mobile-menu{display:none}}
 @media(max-width:620px){.site-header>.brand{gap:5px}.site-header>.brand .brand-logo{width:43px;height:43px}.site-header>.brand .brand-name{font-size:15px;letter-spacing:-.3px}.footer-brand .brand-name{font-size:16px}.admin-top{flex-wrap:wrap;gap:12px}.admin-actions{margin-left:auto}.admin-brand .brand-name{font-size:14px}.login-brand .brand-name{font-size:20px}.businesses{padding-top:30px;padding-bottom:40px}.businesses-heading h2{font-size:29px}.business-grid{grid-template-columns:1fr;gap:12px}.business-card{min-height:150px;padding:17px;gap:15px}.business-logo-frame{width:76px;height:76px}.business-copy h3{font-size:21px}.business-copy p{font-size:11px;margin-bottom:9px}}
 @media(max-width:360px){.site-header{padding-left:10px;padding-right:10px}.site-header>.brand .brand-logo{width:38px;height:38px}.site-header>.brand .brand-name{font-size:14px}.cart-button>span:first-child{display:none}.cart-button{padding:0 9px}}
+
+/* Shared NutriDulce + Nitro Coffee catalog and administration. */
+.nitro-link{color:#ff6840}
+.business-filter-row{display:flex;align-items:center;gap:14px;margin:20px 0 12px;color:var(--muted);font-size:11px;font-weight:700}
+.business-filter-row .filters{margin:0}
+.product-business{display:block;margin-bottom:5px;color:var(--brand-berry);font-size:9px;font-weight:700;letter-spacing:.5px;text-transform:uppercase}
+.nitro-product-card{border-color:#ddd;background:#fff}
+.nitro-product-card .nitro-product-image{background:#171717}
+.nitro-product-image.is-placeholder{background:linear-gradient(135deg,#141414,#30251f)}
+.nitro-product-image.is-placeholder img{opacity:.38;filter:grayscale(1)}
+.nitro-product-card .nitro-business-label{color:#c74624}
+.nitro-product-card .price{color:#b84020}
+.nitro-product-card .add-btn{color:#b84020;border-color:#ebc5b9;background:#fff8f5}
+.nitro-product-card .add-btn:hover{background:#ed542d;color:#fff}
+.admin-brand{gap:7px}
+.brand-plus{font:600 17px var(--serif);color:var(--muted)}
+.nitro-mini-logo{width:48px;height:48px;object-fit:contain;background:#000;border-radius:5px}
+.login-brand .nitro-mini-logo{width:76px;height:76px}
+.auth-tabs{display:flex;gap:8px;margin:12px 0 18px;padding-bottom:10px;border-bottom:1px solid var(--line)}
+.auth-tabs .filter{flex:1}
+.password-field{position:relative;display:flex;align-items:center}
+.password-field input{padding-right:68px}
+.password-toggle{position:absolute;right:8px;border:0;background:transparent;color:var(--brand-berry);font-size:10px;font-weight:700}
+.business-tabs{margin:0 0 13px}
+.business-pill{display:inline-flex;padding:5px 9px;border-radius:15px;background:var(--brand-soft);color:var(--brand-plum);font-size:9px;font-weight:700;white-space:nowrap}
+.business-pill.nitro-pill{background:#242424;color:#ff7956}
+@media(max-width:620px){.business-filter-row{align-items:flex-start;flex-direction:column;gap:8px}.business-filter-row .filters{overflow:visible;flex-wrap:wrap}.business-filter-row .filter{white-space:nowrap}.nitro-mini-logo{width:38px;height:38px}.login-brand{gap:7px}.login-brand .brand-logo{width:72px;height:72px}.login-brand .brand-name{font-size:16px}.login-brand .nitro-mini-logo{width:44px;height:44px}.brand-plus{font-size:14px}.business-tabs{overflow:auto}}
+
+/* Equal brand presence in the shared storefront and neutral administration. */
+.site-header{background:#fff;border-color:#e5e7eb}
+.store-brands{display:flex;align-items:center;gap:9px;flex:none}
+.store-brands .brand{gap:5px}
+.store-brands .brand-logo{width:44px;height:44px}
+.store-brands .nitro-mini-logo{width:38px;height:38px}
+.store-brands .brand-name{font-size:15px}
+.brand-divider{color:#9ca3af;font-size:17px}
+.desktop-nav{flex:1;justify-content:center;margin:0 14px;gap:clamp(12px,2vw,28px)}
+.admin-heading{display:block;flex:1;min-width:0}
+.admin-brand-pair{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:clamp(8px,2vw,24px);width:min(800px,100%)}
+.brand-unit{display:flex;align-items:center;gap:8px;min-width:0}
+.brand-unit:last-child{justify-self:end}
+.brand-unit .brand-logo{width:48px;height:48px}
+.brand-unit .nitro-mini-logo{width:42px;height:42px}
+.brand-unit .brand-name{font-size:16px}
+.admin-middle-label{color:#374151;font-size:12px;font-weight:700;letter-spacing:1.4px;text-align:center;white-space:nowrap}
+.admin-context{display:flex;align-items:center;justify-content:center;gap:9px;margin-top:5px}
+.admin-context .admin-title{font-size:15px}
+.admin-context p{margin:0}
+.admin-view{background:#f3f4f6;color:#30343b}
+.admin-sidebar,.admin-view .stat-card,.admin-view .panel,.admin-view .login-card{background:#fff;border-color:#e1e4e8}
+.admin-view .side-link{color:#555d68}
+.admin-view .side-link.active{color:#252a31;background:#eef0f3}
+.admin-view .admin-button,.admin-view .table-action{border-color:#d9dde2;color:#343a40;background:#fff}
+.admin-view .admin-button.primary-admin,.admin-view .button.primary{color:#fff;background:#424954;border-color:#424954}
+.admin-view .admin-tabs{border-color:#e1e4e8}
+.admin-view .admin-tab.active{color:#303740;border-color:#68717d}
+.admin-view .data-table th,.admin-view .data-table td,.admin-view .payment-row,.admin-view .list-row{border-color:#eceef1}
+.admin-view .data-table th,.admin-view .admin-top p,.admin-view .stat-card small,.admin-view .stat-card span{color:#737b86}
+.admin-view .payment-dot{background:#68717d}
+.admin-view .chart-bar{background:#b4bac2}
+.admin-view .chart-bar.today{background:#626b77}
+.admin-view .login-brand{display:block;margin:0 0 18px}
+.admin-view .login-brand .admin-brand-pair{margin:auto;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:6px}
+.admin-view .login-brand .brand-unit{gap:4px}
+.admin-view .login-brand .brand-unit .brand-logo{width:34px;height:34px}
+.admin-view .login-brand .brand-unit .nitro-mini-logo{width:31px;height:31px}
+.admin-view .login-brand .brand-unit .brand-name{font-size:12px}
+@media(max-width:850px){.store-brands{gap:6px}.store-brands .brand-name{font-size:13px}.admin-brand-pair{gap:8px}.brand-unit{gap:5px}.admin-middle-label{font-size:10px;letter-spacing:1px}}
+@media(max-width:620px){.site-header{padding:0 12px}.store-brands{gap:4px}.store-brands .brand{gap:3px}.store-brands .brand-logo{width:32px;height:32px}.store-brands .nitro-mini-logo{width:29px;height:29px}.store-brands .brand-name{font-size:11px;letter-spacing:-.2px}.brand-divider{font-size:13px}.desktop-nav{display:none}.admin-heading{width:100%}.admin-brand-pair{gap:5px}.brand-unit{gap:4px}.brand-unit .brand-logo{width:34px;height:34px}.brand-unit .nitro-mini-logo{width:31px;height:31px}.brand-unit .brand-name{font-size:11px}.admin-middle-label{font-size:9px;letter-spacing:.7px}.admin-context{justify-content:flex-start}.admin-context .admin-title{font-size:13px}.admin-context p{font-size:9px}.admin-view .login-brand .brand-unit .brand-logo{width:35px;height:35px}.admin-view .login-brand .brand-unit .nitro-mini-logo{width:32px;height:32px}.admin-view .login-brand .brand-unit .brand-name{font-size:12px}}
+
+/* Neutral shared storefront; each business keeps its own logo and accents. */
+:root{--ink:#30343b;--muted:#6b7280;--cream:#f3f4f6;--paper:#fafbfc;--line:#e5e7eb;--rose:#6b7280;--rose-dark:#4b5563;--sage:#737b86;--butter:#e5e7eb;--shadow:0 16px 40px #1f293710}
+body{background:var(--paper);color:var(--ink)}
+.announcement{background:#eceff2;color:#4b5563}
+.announcement span{color:#66707b}
+.site-header{background:#fff;border-color:#e5e7eb}
+.desktop-nav a{color:#545b66}
+.desktop-nav a:hover{color:#30343b}
+.hero h1 em,.hero .eyebrow,.hero .eyebrow span,.section-heading h2 span{color:#626b77}
+.hero-copy>p,.hero-note,.section-heading p{color:#68717c}
+.hero-sun{background:#eef0f2}
+.hero-sticker{background:#59616c}
+.hero-photo-wrap{background:#e6e8eb}
+.button.primary,.primary-admin{background:#424954;color:#fff;border-color:#424954}
+.button.primary:hover,.primary-admin:hover{background:#303640}
+.filter.active{background:#eceff2;border-color:#dce0e5;color:#3f4650}
+.filter[data-business-filter="nutridulce"].active{background:#ffe5ef;border-color:#f5c8da;color:#7d2a4a}
+.filter[data-business-filter="nitro-coffee"].active{background:#242424;border-color:#242424;color:#ff7956}
+.cart-button{border-color:#dfe3e8;background:#fff}
+.cart-icon{color:#5f6874}
+.cart-button b{background:#eceff2;color:#424954}
+.search-box{border-color:#dce1e6;color:#66707b}
+.catalog,.site-footer{border-color:#e5e7eb}
+.cta-card{background:#343a43;color:#fff}
+.cta-card .eyebrow{color:#d3d7dc}
+.cta-card h2,.cta-card p{color:#f3f4f6}
+.site-footer{background:#f3f4f6}
+.footer-brands .brand-name{font-size:15px}
+@media(max-width:620px){.footer-brands .brand-logo{width:32px;height:32px}.footer-brands .nitro-mini-logo{width:29px;height:29px}.footer-brands .brand-name{font-size:11px}.site-footer{background:#f3f4f6}}
+
+.history-section{padding-top:52px;padding-bottom:52px}
+.history-heading,.contact-heading{max-width:760px;margin:0 auto 24px;text-align:center}
+.history-heading h2,.contact-heading h2{font:500 34px var(--serif);letter-spacing:-.7px;margin:8px 0}
+.history-heading>p,.contact-heading>p{max-width:680px;margin:0 auto;color:#68717c;font-size:13px;line-height:1.8}
+.history-brands{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;max-width:850px;margin:auto}
+.history-brand{padding:20px 22px;border:1px solid #e1e4e8;border-radius:8px;background:#fff}
+.history-brand h3{margin:0 0 5px;font:600 19px var(--serif)}
+.history-brand p{margin:0;color:#68717c;font-size:12px}
+.dulce-history{border-top:3px solid #d98aa7}
+.nitro-history{border-top:3px solid #ed542d}
+.contact-section{padding-top:45px;padding-bottom:66px}
+.contact-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.contact-card{display:flex;flex-direction:column;align-items:flex-start;gap:8px;min-width:0;padding:19px 20px;border:1px solid #e1e4e8;border-radius:8px;background:#fff;color:var(--ink);text-decoration:none;transition:transform .18s,border-color .18s,box-shadow .18s}
+.contact-card:hover{transform:translateY(-2px);border-color:#c7ccd3;box-shadow:var(--shadow)}
+.contact-card:focus-visible{outline:3px solid #9ca3af;outline-offset:3px}
+.contact-channel{color:#737b86;font-size:10px;font-weight:700;letter-spacing:.7px;text-transform:uppercase}
+.contact-card strong{font:600 18px var(--serif);overflow-wrap:anywhere}
+.contact-handle{color:#68717c;font-size:11px}
+.whatsapp-contact{border-top:3px solid #25a366}
+.dulce-contact{border-top:3px solid #d98aa7}
+.nitro-contact{border-top:3px solid #ed542d}
+@media(max-width:760px){.contact-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:620px){.history-section{padding-top:38px;padding-bottom:38px}.history-heading h2,.contact-heading h2{font-size:29px}.history-brands,.contact-grid{grid-template-columns:1fr}.contact-section{padding-top:38px;padding-bottom:48px}.contact-card{padding:16px 17px}}
+
+/* Warm shared storefront palette. Admin colors stay scoped to its own panel. */
+#store-view{--ink:#292929;--muted:#716f67;--cream:#F5F1E8;--paper:#FFFCF5;--line:#DDD8CC;--rose:#6F7561;--rose-dark:#575d4c;--sage:#6F7561;--butter:#e8e1d4;--brand-soft:#f3ecdf;--shadow:0 14px 38px #35372d12}
+body:has(#store-view:not(.hidden)){background:#F5F1E8;color:#292929}
+body:has(#store-view:not(.hidden)) .announcement{background:#ebe6da;color:#50524a}
+body:has(#store-view:not(.hidden)) .announcement span{color:#6F7561}
+body:has(#store-view:not(.hidden)) .site-header{background:#FFFCF5;border-color:#DDD8CC;box-shadow:0 4px 18px #34352c0a}
+body:has(#store-view:not(.hidden)) .desktop-nav a{color:#57584f}
+body:has(#store-view:not(.hidden)) .desktop-nav a:hover{color:#6F7561}
+body:has(#store-view:not(.hidden)) .store-brands .brand:first-child .brand-name{color:#963459}
+body:has(#store-view:not(.hidden)) .store-brands .nitro-header-brand .brand-name{color:#292929}
+body:has(#store-view:not(.hidden)) .icon-btn,body:has(#store-view:not(.hidden)) .mobile-menu{color:#55594d}
+body:has(#store-view:not(.hidden)) .cart-button{background:#FFFCF5;border-color:#DDD8CC;color:#292929}
+body:has(#store-view:not(.hidden)) .cart-icon{color:#6F7561}
+body:has(#store-view:not(.hidden)) .cart-button b{background:#e8e3d7;color:#44483d}
+#store-view .hero h1 em,#store-view .hero .eyebrow,#store-view .hero .eyebrow span,#store-view .section-heading h2 span{color:#6F7561}
+#store-view .hero-copy>p,#store-view .hero-note,#store-view .section-heading p{color:#68685f}
+#store-view .hero-sun{background:#e9e4d8}
+#store-view .hero-sticker{background:#6F7561}
+#store-view .hero-photo-wrap{background:#e8e0d1}
+#store-view .button.primary{background:#6F7561;color:#fff;border-color:#6F7561}
+#store-view .button.primary:hover{background:#575d4c}
+#store-view .filter.active{background:#6F7561;border-color:#6F7561;color:#fff}
+#store-view .filter[data-business-filter="nutridulce"].active{background:#963459;border-color:#963459;color:#fff}
+#store-view .filter[data-business-filter="nitro-coffee"].active{background:#242424;border-color:#242424;color:#ff7956}
+#store-view .search-box{border-color:#cfc9bc;color:#6F7561}
+#store-view .catalog{border-color:#DDD8CC}
+#store-view .product-card{background:#FFFCF5;border-color:#e2ddd2}
+#store-view .product-image{background:#ece5d8}
+#store-view .product-business{color:#6F7561}
+#store-view .price{color:#575d4c}
+#store-view .add-btn{border-color:#cbd0c1;background:#f4f5ef;color:#575d4c}
+#store-view .add-btn:hover{background:#6F7561;color:#fff}
+#store-view .promise-band{background:#eee9dd}
+#store-view .promise-icon{color:#6F7561}
+#store-view .promise-band small{color:#6c6b62}
+#store-view .cta-card{background:#6F7561;color:#fff}
+#store-view .cta-card .eyebrow{color:#eef0e8}
+#store-view .cta-card h2,#store-view .cta-card p{color:#fff}
+#store-view .history-heading>p,#store-view .contact-heading>p{color:#68685f}
+#store-view .history-brand,#store-view .contact-card{background:#FFFCF5;border-color:#DDD8CC}
+#store-view .history-brand p,#store-view .contact-handle{color:#68685f}
+#store-view .history-brand h3,#store-view .contact-card strong{color:#292929}
+#store-view .history-brand.dulce-history{border-top-color:#d98aa7}
+#store-view .history-brand.nitro-history{border-top-color:#ed542d}
+#store-view .contact-card.whatsapp-contact{border-top-color:#25a366}
+#store-view .contact-card.dulce-contact{border-top-color:#d98aa7}
+#store-view .contact-card.nitro-contact{border-top-color:#ed542d}
+#store-view .contact-card:hover{border-color:#c7c1b4;box-shadow:var(--shadow)}
+body:has(#store-view:not(.hidden)) .site-footer{background:#eee9dd;border-color:#DDD8CC;color:#68685f}
+body:has(#store-view:not(.hidden)) .site-footer>span b{color:#6F7561}
+@media(max-width:620px){body:has(#store-view:not(.hidden)) .site-footer{background:#eee9dd}}
+
+/* Group both storefront brands in the header at every viewport width. */
+.site-header{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;column-gap:12px;justify-content:initial}
+.header-brand-stack{grid-column:2;grid-row:1;display:grid;justify-items:center;gap:2px;min-width:0}
+.store-brands{justify-content:center;gap:10px}
+.desktop-nav{grid-column:1;grid-row:1;justify-self:start;flex:none;margin:0;gap:clamp(10px,1.4vw,20px)}
+.header-actions{grid-column:3;grid-row:1;justify-self:end;min-width:0}
+
+
+.admin-brand-pair{display:flex;justify-content:center;align-items:center;width:100%}
+.admin-middle-label{font-size:13px;letter-spacing:1.5px;color:#3e444c}
+.admin-top{align-items:flex-start;gap:18px}
+.admin-actions{flex-wrap:wrap;justify-content:flex-end}
+.admin-tabs{flex-wrap:wrap;overflow:visible}
+.admin-tab{white-space:normal}
+@media(max-width:1000px){.site-header{grid-template-rows:auto auto;min-height:78px;height:auto;padding:8px 16px;row-gap:7px}.header-brand-stack{grid-column:2;grid-row:1}.header-actions{grid-column:3;grid-row:1}.desktop-nav{grid-column:1/-1;grid-row:2;justify-self:center;flex-wrap:wrap;justify-content:center}.admin-top{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:12px}.admin-heading{width:100%;min-width:0}.admin-actions{max-width:240px}}
+@media(max-width:760px){.admin-top{display:flex;flex-direction:column;align-items:stretch;gap:12px}.admin-actions{max-width:none;width:100%;justify-content:flex-start;margin-left:0}.admin-actions .admin-button{flex:0 1 auto}.admin-brand-pair{justify-content:flex-start}.admin-middle-label{font-size:13px}.admin-context{justify-content:flex-start;flex-wrap:wrap}.admin-tabs{gap:6px}.admin-tab{padding:9px 11px}}
+@media(max-width:620px){.site-header{grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto auto;row-gap:8px;padding:9px 13px}.header-brand-stack{grid-column:1;grid-row:1;justify-self:center}.header-actions{grid-column:1;grid-row:3;justify-self:center}.desktop-nav{grid-column:1;grid-row:2;display:flex;gap:clamp(10px,4vw,18px);font-size:11px}.desktop-nav a{font-size:11px}.store-brands{gap:7px}.store-brands .brand{gap:4px}.store-brands .brand-logo{width:38px;height:38px}.store-brands .nitro-mini-logo{width:34px;height:34px}.store-brands .brand-name{font-size:13px;letter-spacing:-.2px}.brand-divider{font-size:15px}.admin-entry{display:grid}.admin-top{display:flex;flex-direction:column;align-items:stretch;gap:13px}.admin-heading{width:100%}.admin-brand-pair{justify-content:flex-start}.admin-middle-label{font-size:13px;letter-spacing:1.2px}.admin-context{align-items:flex-start;justify-content:flex-start;flex-direction:column;gap:3px}.admin-context p{font-size:11px}.admin-actions{display:flex;flex-wrap:wrap;gap:8px;width:100%;margin:0}.admin-tabs{display:flex;flex-wrap:wrap;gap:5px;overflow:visible}.admin-tab{white-space:normal;padding:9px 10px}.business-tabs{overflow:visible}}
+@media(max-width:380px){.store-brands{gap:5px}.store-brands .brand{gap:3px}.store-brands .brand-logo{width:34px;height:34px}.store-brands .nitro-mini-logo{width:31px;height:31px}.store-brands .brand-name{font-size:12px}.desktop-nav{gap:9px}.desktop-nav a{font-size:10px}}
+
+/* Brand-aware product card hover states, using the business slug classes. */
+#store-view .product-card{transition:transform .22s ease,border-color .22s ease,box-shadow .22s ease,background-color .22s ease}
+#store-view .product-card.nutridulce-product-card:hover{background:#fff9fb;border-color:#dfa7bb;box-shadow:0 12px 30px #96345920}
+#store-view .product-card.nitro-product-card:hover{background:#fffaf6;border-color:#ed542d;box-shadow:0 12px 30px #ed542d25}
+
+/* A more vivid hero ties the storefront's warm base to both business accents. */
+#store-view .hero{background:#586548;color:#fff;border-radius:0 0 18px 18px}
+#store-view .hero h1,#store-view .hero h1 em{color:#fff}
+#store-view .hero h1 em{color:#f1dca7}
+#store-view .hero .eyebrow,#store-view .hero .eyebrow span{color:#f5e9c9}
+#store-view .hero-copy>p,#store-view .hero-note{color:#f3f1e8}
+#store-view .hero .primary{background:#FFFCF5;color:#414b37;border-color:#FFFCF5}
+#store-view .hero .primary:hover{background:#f1e8d4}
+#store-view .hero-sun{background:#758260}
+#store-view .hero-sticker{background:#ed8b56;color:#fff}
+#store-view .hero-float{background:#FFFCF5;color:#414b37}
+@media(max-width:620px){#store-view .hero{border-radius:0 0 14px 14px}}
+
+/* Shared peach identity across the public storefront. */
+#store-view{--cream:#F7EBDD;--paper:#FBF6EF;--line:#DDD8CC;--rose:#A96636;--rose-dark:#854D2A;--sage:#7B795E;--butter:#F7C99B;--brand-soft:#F8E9DA;--shadow:0 14px 38px #47372314}
+body:has(#store-view:not(.hidden)){background:#FBF6EF;color:#292929}
+body:has(#store-view:not(.hidden)) .site-header{background:#FFFCF5;border-color:#DDD8CC}
+body:has(#store-view:not(.hidden)) .desktop-nav a{color:#4b4943}
+body:has(#store-view:not(.hidden)) .desktop-nav a:hover{color:#A96636}
+body:has(#store-view:not(.hidden)) .store-brands .brand:first-child .brand-name{color:#963459}
+body:has(#store-view:not(.hidden)) .store-brands .nitro-header-brand .brand-name{color:#292929}
+body:has(#store-view:not(.hidden)) .cart-button{background:#FFFCF5;border-color:#DDD8CC;color:#292929}
+body:has(#store-view:not(.hidden)) .cart-icon{color:#A96636}
+body:has(#store-view:not(.hidden)) .cart-button b{background:#F3E5D5;color:#4b4239}
+#store-view .hero{background:#F7C99B;color:#292929}
+#store-view .hero h1,#store-view .hero h1 em{color:#292929}
+#store-view .hero h1 em{color:#714928}
+#store-view .hero .eyebrow,#store-view .hero .eyebrow span{color:#714928}
+#store-view .hero-copy>p,#store-view .hero-note{color:#423b34}
+#store-view .hero .primary{background:#A96636;color:#fff;border-color:#A96636}
+#store-view .hero .primary:hover{background:#985728}
+#store-view .hero-sun{background:#fbe0c1}
+#store-view .hero-float{background:#FFFCF5;color:#423b34}
+#store-view .section-heading h2 span{color:#A96636}
+#store-view .filter.active{background:#F7C99B;border-color:#edbd8d;color:#292929}
+#store-view .filter[data-business-filter="nutridulce"].active{background:#963459;border-color:#963459;color:#fff}
+#store-view .filter[data-business-filter="nitro-coffee"].active{background:#242424;border-color:#242424;color:#ff7956}
+#store-view .button.primary{background:#A96636;color:#fff;border-color:#A96636}
+#store-view .button.primary:hover{background:#854D2A}
+#store-view .product-card{background:#FFFCF5;border-color:#e5ddcf}
+#store-view .product-business{color:#7B795E}
+#store-view .price{color:#854D2A}
+#store-view .add-btn{border-color:#e4c6a7;background:#fcf4e9;color:#854D2A}
+#store-view .add-btn:hover{background:#A96636;color:#fff}
+#store-view .nutridulce-product-card .product-business,#store-view .nutridulce-product-card .price{color:#963459}
+#store-view .nitro-product-card .product-business{color:#c74624}
+#store-view .nitro-product-card .price{color:#b84020}
+#store-view .nutridulce-product-card .add-btn{border-color:#ebcada;background:#fff4f8;color:#842f53}
+#store-view .nutridulce-product-card .add-btn:hover{background:#963459;color:#fff}
+#store-view .nitro-product-card .add-btn{border-color:#ebc5b9;background:#fff8f5;color:#b84020}
+#store-view .nitro-product-card .add-btn:hover{background:#ed542d;color:#fff}
+#store-view .promise-band{background:#F4EADB}
+#store-view .promise-icon{color:#A96636}
+#store-view .cta-card{background:#F1D6B7;color:#292929}
+#store-view .cta-card .eyebrow{color:#6c4d34}
+#store-view .cta-card h2,#store-view .cta-card p{color:#292929}
+#store-view .history-brand,#store-view .contact-card{background:#FFFCF5;border-color:#DDD8CC}
+body:has(#store-view:not(.hidden)) .site-footer{background:#F4EADB;border-color:#DDD8CC;color:#5d5850}
+body:has(#store-view:not(.hidden)) .site-footer>span b{color:#A96636}
+#catalogo,#nosotros,#contacto{scroll-margin-top:96px}
+
+/* Warm orange accents for administration, while keeping its light neutral surfaces. */
+.admin-view .admin-middle-label,.admin-view .admin-context .admin-title{color:#9a5c2e}
+.admin-view .admin-button.primary-admin,.admin-view .button.primary{background:#C77C43;border-color:#C77C43;color:#fff}
+.admin-view .admin-button.primary-admin:hover,.admin-view .button.primary:hover{background:#A96636;border-color:#A96636}
+.admin-view .side-link.active{color:#8c542b;background:#fff0e1}
+.admin-view .admin-tab.active{color:#995c30;border-color:#dc985d}
+.admin-view .payment-dot{background:#d88c4e}
+.admin-view .chart-bar.today{background:#dc9855}
+.admin-view .admin-view-highlight{color:#995c30}
+
+@media(max-width:620px){.desktop-nav{flex-wrap:wrap}.admin-top{gap:14px}.admin-actions{row-gap:8px}.admin-tabs{row-gap:7px}}
+@media(max-width:380px){.desktop-nav{gap:8px}.desktop-nav a{font-size:11px}}
+
+/* Compact mobile header while preserving the desktop brand lockup. */
+@media(max-width:620px){
+  .site-header{padding:5px 8px;row-gap:5px;min-height:0}
+  .header-brand-stack{gap:0}
+  .store-brands{gap:5px}
+  .store-brands .brand{gap:2px}
+  .store-brands .brand-logo{width:31px;height:31px}
+  .store-brands .nitro-mini-logo{width:27px;height:27px}
+  .store-brands .brand-name{font-size:11px;letter-spacing:-.25px;white-space:nowrap}
+  .brand-divider{font-size:12px;line-height:1}
+  .header-actions{gap:6px}
+  .header-actions .icon-btn,.header-actions .mobile-menu{padding:5px;font-size:18px}
+  .cart-button{height:32px;padding:0 7px;gap:5px;font-size:11px}
+  .cart-icon{font-size:15px}
+  .cart-button b{min-width:16px;height:16px;font-size:9px}
+}
+@media(max-width:380px){
+  .site-header{padding-left:6px;padding-right:6px}
+  .store-brands{gap:4px}
+  .store-brands .brand{gap:2px}
+  .store-brands .brand-logo{width:29px;height:29px}
+  .store-brands .nitro-mini-logo{width:26px;height:26px}
+  .store-brands .brand-name{font-size:10.5px;letter-spacing:-.3px}
+}
+
+/* Mobile header: brand and actions on row one, public navigation on row two. */
+@media(max-width:768px){
+  .site-header{
+    grid-template-columns:minmax(0,1fr) auto;
+    grid-template-rows:auto auto;
+    align-items:center;
+    height:auto;
+    min-height:0;
+    padding:6px 12px;
+    column-gap:7px;
+    row-gap:5px;
+    overflow:visible;
+  }
+  .header-brand-stack{grid-column:1;grid-row:1;justify-self:start;min-width:0;gap:0}
+  .store-brands{justify-content:flex-start;gap:4px;min-width:0;overflow:visible}
+  .store-brands .brand{gap:2px;white-space:nowrap}
+  .store-brands .brand-logo{width:30px;height:30px;flex:none}
+  .store-brands .nitro-mini-logo{width:26px;height:26px;flex:none}
+  .store-brands .brand-name{font-size:11px;letter-spacing:-.25px;white-space:nowrap}
+  .brand-divider{margin:0;padding:0 1px;font-size:12px;line-height:1}
+  .header-actions{grid-column:2;grid-row:1;justify-self:end;display:flex;flex-wrap:nowrap;align-items:center;gap:4px;min-width:0}
+  .header-actions .admin-entry,.header-actions .mobile-menu{display:grid;place-items:center;width:27px;height:29px;padding:2px;font-size:16px;line-height:1}
+  .cart-button{height:30px;padding:0 6px;gap:4px;font-size:10px;white-space:nowrap;flex:none}
+  .cart-icon{font-size:14px}
+  .cart-button b{min-width:16px;height:16px;font-size:9px}
+  .desktop-nav{
+    grid-column:1/-1;
+    grid-row:2;
+    display:flex;
+    justify-self:start;
+    justify-content:flex-start;
+    flex-wrap:wrap;
+    gap:8px clamp(10px,3vw,18px);
+    min-width:0;
+    margin:0;
+    padding:2px 0 1px;
+    overflow:visible;
+    white-space:nowrap;
+  }
+  .desktop-nav a{flex:none;font-size:11px;line-height:1.35}
+  #catalogo,#nosotros,#contacto{scroll-margin-top:100px}
+}
+@media(max-width:480px){
+  .site-header{padding:5px 8px;column-gap:5px;row-gap:4px}
+  .store-brands{gap:3px}
+  .store-brands .brand{gap:1px}
+  .store-brands .brand-logo{width:28px;height:28px}
+  .store-brands .nitro-mini-logo{width:25px;height:25px}
+  .store-brands .brand-name{font-size:10.5px;letter-spacing:-.3px}
+  .brand-divider{font-size:11px;padding:0}
+  .header-actions{gap:3px}
+  .header-actions .admin-entry,.header-actions .mobile-menu{width:28px;height:30px;font-size:15px}
+  .cart-button{height:28px;padding:0 5px;gap:3px;font-size:10px}
+  .desktop-nav{gap:7px 12px}
+  .desktop-nav a{font-size:10.5px}
+}
+@media(max-width:380px){
+  .site-header{padding-left:6px;padding-right:6px;column-gap:4px}
+  .store-brands{gap:3px}
+  .store-brands .brand-logo{width:26px;height:26px}
+  .store-brands .nitro-mini-logo{width:24px;height:24px}
+  .store-brands .brand-name{font-size:10px;letter-spacing:-.35px}
+  .header-actions .admin-entry,.header-actions .mobile-menu{width:30px;height:32px;padding:1px}
+  .cart-button{height:27px;min-width:45px;padding:0 5px;gap:3px}
+  .cart-button>span:first-child{display:none}
+  .cart-icon{font-size:0}
+  .cart-icon::before{content:"🛒";font-size:13px}
+  .desktop-nav{gap:6px 10px}
+  .desktop-nav a{font-size:10px}
+}
