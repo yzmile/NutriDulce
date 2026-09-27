@@ -496,3 +496,13 @@ body:has(#store-view:not(.hidden)) .site-footer>span b{color:#A96636}
   .desktop-nav{gap:6px 10px}
   .desktop-nav a{font-size:10px}
 }
+
+/* Center the admin title block in the full desktop header, independently of its actions. */
+@media(min-width:761px){
+  .admin-top{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:start}
+  .admin-heading{grid-column:2;grid-row:1;width:max-content;max-width:100%;min-width:0;flex:none;text-align:center}
+  .admin-brand-pair{justify-content:center}
+  .admin-context{flex-direction:column;align-items:center;justify-content:center;gap:2px;text-align:center}
+  .admin-actions{grid-column:3;grid-row:1;justify-self:end}
+  #admin-view > .admin-top > #back-store{grid-column:3;grid-row:1;justify-self:end}
+}
